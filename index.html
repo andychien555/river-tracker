@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>River Token 聰明錢追蹤器</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0e17;color:#e1e5ee;min-height:100vh}
+.header{background:linear-gradient(135deg,#1a1f2e,#0d1117);border-bottom:1px solid #1e2939;padding:20px 30px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.header h1{font-size:22px;background:linear-gradient(90deg,#00d4aa,#00b4d8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header .meta{font-size:12px;color:#8b95a5}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;padding:16px 24px}
+.card{background:#141924;border:1px solid #1e2939;border-radius:10px;padding:14px}
+.card .label{font-size:11px;color:#8b95a5;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+.card .value{font-size:22px;font-weight:700}
+.card .sub{font-size:12px;margin-top:3px}
+.green{color:#00d4aa}.red{color:#ff6b6b}.yellow{color:#ffd93d}.blue{color:#00b4d8}
+.section{padding:4px 24px}
+.section h2{font-size:16px;margin:14px 0 8px;color:#c1c8d4}
+.chart-box{background:#141924;border:1px solid #1e2939;border-radius:10px;padding:16px;margin-bottom:14px}
+.chart-box canvas{width:100%!important;max-height:300px}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button{background:#1a1f2e;border:1px solid #1e2939;color:#8b95a5;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px}
+.tabs button.active{background:#00d4aa22;border-color:#00d4aa;color:#00d4aa}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sm-card{background:#141924;border:1px solid #1e2939;border-radius:10px;padding:16px}
+.sm-card h3{font-size:14px;margin-bottom:10px;color:#8b95a5}
+.row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1e293922;font-size:13px}
+.row:last-child{border:none}
+.row .k{color:#8b95a5}
+.row .v{font-weight:600}
+.signal-item{background:#141924;border:1px solid #1e2939;border-radius:10px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.dir{min-width:50px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+.dir.buy{background:#00d4aa22;color:#00d4aa}.dir.sell{background:#ff6b6b22;color:#ff6b6b}
+.sig-info{flex:1;min-width:0}
+.sig-info .name{font-weight:600;font-size:14px}
+.sig-info .detail{font-size:11px;color:#8b95a5;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gain{font-size:16px;font-weight:700;min-width:60px;text-align:right}
+.footer{padding:12px 24px;font-size:11px;color:#555;text-align:center;border-top:1px solid #1e2939;margin-top:20px}
+.river-tag{background:#00d4aa22;border:1px solid #00d4aa44;border-radius:4px;padding:1px 6px;font-size:10px;color:#00d4aa;margin-left:6px}
+@media(max-width:768px){.grid{grid-template-columns:1fr 1fr}.two-col{grid-template-columns:1fr}.header h1{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>🐊 River Token 聰明錢追蹤器</h1>
+    <div class="meta">BSC · 0xda7a...52b3 · 每 30 分鐘自動快照 · 資料來自 Binance Web3</div>
+  </div>
+  <div>
+    <div class="meta" id="lastUpdate">載入中...</div>
+    <div class="meta" id="dataPoints"></div>
+  </div>
+</div>
+
+<div class="grid" id="statsGrid">
+  <div class="card"><div class="label">價格</div><div class="value" id="price">--</div><div class="sub" id="priceChange">--</div></div>
+  <div class="card"><div class="label">市值</div><div class="value" id="mcap">--</div><div class="sub" id="fdv">--</div></div>
+  <div class="card"><div class="label">24h 成交量</div><div class="value" id="vol24">--</div><div class="sub" id="volRatio">--</div></div>
+  <div class="card"><div class="label">持幣者</div><div class="value" id="holders">--</div><div class="sub" id="top10">--</div></div>
+  <div class="card"><div class="label">🧠 聰明錢</div><div class="value green" id="smHolders">--</div><div class="sub" id="smPercent">--</div></div>
+  <div class="card"><div class="label">📢 KOL</div><div class="value yellow" id="kolHolders">--</div><div class="sub" id="kolPercent">--</div></div>
+  <div class="card"><div class="label">流動性</div><div class="value" id="liquidity">--</div><div class="sub" id="liqRatio">--</div></div>
+  <div class="card"><div class="label">新錢包</div><div class="value" id="newWallet">--</div><div class="sub" id="newWalletPct">--</div></div>
+</div>
+
+<div class="section">
+  <h2>📈 歷史價格走勢（每 30 分鐘快照）</h2>
+  <div class="chart-box"><canvas id="priceHistoryChart"></canvas></div>
+
+  <h2>🧠 聰明錢持倉變化</h2>
+  <div class="chart-box"><canvas id="smChart"></canvas></div>
+
+  <h2>📊 成交量趨勢</h2>
+  <div class="chart-box"><canvas id="volumeChart"></canvas></div>
+
+  <h2>👥 持幣者數量變化</h2>
+  <div class="chart-box"><canvas id="holdersChart"></canvas></div>
+</div>
+
+<div class="section">
+  <h2>🧠 持倉分析</h2>
+  <div class="two-col">
+    <div class="sm-card">
+      <h3>持倉者類型分布</h3>
+      <canvas id="holderPie" height="220"></canvas>
+    </div>
+    <div class="sm-card">
+      <h3>關鍵指標</h3>
+      <div id="keyMetrics"></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>📡 BSC 聰明錢信號</h2>
+  <div id="signalList"><div style="color:#8b95a5;padding:20px;text-align:center">載入中...</div></div>
+</div>
+
+<div class="footer">River Token Smart Money Tracker · 資料每 30 分鐘自動快照並推送至 GitHub Pages · 數據來源: Binance Web3 API</div>
+
+<script>
+const DATA_URL = 'data/history.json';
+const SIGNALS_URL = 'data/signals.json';
+
+function fmt(n,d=2){if(n>=1e9)return'$'+(n/1e9).toFixed(d)+'B';if(n>=1e6)return'$'+(n/1e6).toFixed(d)+'M';if(n>=1e3)return'$'+(n/1e3).toFixed(d)+'K';return'$'+Number(n).toFixed(d)}
+function pct(v){const n=parseFloat(v);const c=n>=0?'green':'red';return`<span class="${c}">${n>=0?'+':''}${n.toFixed(2)}%</span>`}
+
+let charts = {};
+
+function makeChart(id, labels, datasets, opts={}) {
+  if(charts[id]) charts[id].destroy();
+  const defaults = {
+    responsive:true,
+    interaction:{intersect:false,mode:'index'},
+    scales:{
+      x:{type:'time',time:{tooltipFormat:'MM/dd HH:mm'},ticks:{color:'#8b95a5',maxTicksLimit:10},grid:{color:'#1e2939'}},
+      y:{ticks:{color:'#8b95a5'},grid:{color:'#1e2939'}}
+    },
+    plugins:{legend:{labels:{color:'#8b95a5',font:{size:11}}}}
+  };
+  const merged = JSON.parse(JSON.stringify(defaults));
+  if(opts.yCallback) merged.scales.y.ticks.callback = opts.yCallback;
+  if(opts.y1) {
+    merged.scales.y1 = {position:'right',ticks:{color:'#ffd93d'},grid:{drawOnChartArea:false}};
+    if(opts.y1Callback) merged.scales.y1.ticks.callback = opts.y1Callback;
+  }
+  charts[id] = new Chart(document.getElementById(id), {
+    type: opts.type||'line',
+    data:{labels, datasets},
+    options: merged
+  });
+}
+
+function renderHistory(data) {
+  if(!data.length) return;
+  const latest = data[data.length-1];
+  const labels = data.map(d => new Date(d.timestamp));
+
+  // Stats cards
+  document.getElementById('price').textContent = '$' + latest.price.toFixed(2);
+  document.getElementById('priceChange').innerHTML = `24h: ${pct(latest.percentChange24h)}`;
+  document.getElementById('mcap').textContent = fmt(latest.marketCap);
+  document.getElementById('fdv').textContent = 'FDV: ' + fmt(latest.fdv);
+  document.getElementById('vol24').textContent = fmt(latest.volume24h);
+  const buyR = (latest.volume24hBuy/latest.volume24h*100).toFixed(1);
+  document.getElementById('volRatio').innerHTML = `買 <span class="green">${buyR}%</span> · 賣 <span class="red">${(100-buyR).toFixed(1)}%</span>`;
+  document.getElementById('holders').textContent = latest.holders.toLocaleString();
+  document.getElementById('top10').textContent = 'Top10: ' + latest.top10HoldersPercentage.toFixed(1) + '%';
+  document.getElementById('smHolders').textContent = latest.smartMoneyHolders;
+  document.getElementById('smPercent').textContent = '持倉: ' + (latest.smartMoneyHoldingPercent*100).toFixed(2) + '%';
+  document.getElementById('kolHolders').textContent = latest.kolHolders;
+  document.getElementById('kolPercent').textContent = '持倉: ' + (latest.kolHoldingPercent*100).toFixed(2) + '%';
+  document.getElementById('liquidity').textContent = fmt(latest.liquidity);
+  document.getElementById('liqRatio').textContent = 'Liq/MCap: ' + (latest.liquidity/latest.marketCap*100).toFixed(2) + '%';
+  document.getElementById('newWallet').textContent = latest.newWalletHolders.toLocaleString();
+  document.getElementById('newWalletPct').textContent = '佔比: ' + (latest.newWalletHoldingPercent*100).toFixed(1) + '%';
+  document.getElementById('lastUpdate').textContent = '最新快照: ' + new Date(latest.timestamp).toLocaleString('zh-TW');
+  document.getElementById('dataPoints').textContent = `累計 ${data.length} 筆快照`;
+
+  // Price chart
+  makeChart('priceHistoryChart', labels, [{
+    label:'價格 (USD)', data:data.map(d=>d.price),
+    borderColor:'#00d4aa', backgroundColor:'#00d4aa15', fill:true, pointRadius:data.length>100?0:2, borderWidth:2, tension:.3
+  }], {yCallback: v=>'$'+v.toFixed(2)});
+
+  // Smart money chart (dual axis)
+  makeChart('smChart', labels, [
+    {label:'聰明錢持倉者', data:data.map(d=>d.smartMoneyHolders), borderColor:'#00d4aa', backgroundColor:'#00d4aa33', fill:true, pointRadius:data.length>100?0:3, borderWidth:2, yAxisID:'y'},
+    {label:'聰明錢持倉%', data:data.map(d=>d.smartMoneyHoldingPercent*100), borderColor:'#ffd93d', pointRadius:data.length>100?0:3, borderWidth:2, borderDash:[5,3], yAxisID:'y1'},
+  ], {y1:true, yCallback:v=>v, y1Callback:v=>v.toFixed(2)+'%'});
+
+  // Volume chart
+  makeChart('volumeChart', labels, [
+    {label:'24h 總量', data:data.map(d=>d.volume24h), borderColor:'#00b4d8', backgroundColor:'#00b4d822', fill:true, pointRadius:0, borderWidth:2, tension:.3},
+    {label:'24h 買入', data:data.map(d=>d.volume24hBuy), borderColor:'#00d4aa66', pointRadius:0, borderWidth:1.5, tension:.3},
+    {label:'24h 賣出', data:data.map(d=>d.volume24hSell), borderColor:'#ff6b6b66', pointRadius:0, borderWidth:1.5, tension:.3},
+  ], {yCallback: v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v});
+
+  // Holders chart
+  makeChart('holdersChart', labels, [{
+    label:'持幣者', data:data.map(d=>d.holders), borderColor:'#a78bfa', backgroundColor:'#a78bfa15', fill:true, pointRadius:data.length>100?0:2, borderWidth:2, tension:.3
+  }]);
+
+  // Pie chart
+  const pd = [latest.smartMoneyHoldingPercent*100, latest.kolHoldingPercent*100, latest.proHoldingPercent*100, latest.newWalletHoldingPercent*100, latest.bundlerHoldingPercent*100];
+  pd.push(Math.max(0,100-pd.reduce((a,b)=>a+b,0)));
+  if(charts.pie) charts.pie.destroy();
+  charts.pie = new Chart(document.getElementById('holderPie'),{
+    type:'doughnut',data:{labels:['聰明錢','KOL','專業投資者','新錢包','Bundler','其他'],datasets:[{data:pd,backgroundColor:['#00d4aa','#ffd93d','#00b4d8','#a78bfa','#ff6b6b','#3a4556'],borderWidth:0}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#8b95a5',padding:8,font:{size:11}}}}}
+  });
+
+  // Key metrics
+  document.getElementById('keyMetrics').innerHTML = [
+    ['聰明錢持倉者',latest.smartMoneyHolders,'green'],
+    ['聰明錢持倉%',(latest.smartMoneyHoldingPercent*100).toFixed(2)+'%','green'],
+    ['KOL 持倉者',latest.kolHolders,'yellow'],
+    ['專業投資者',latest.proHolders,'blue'],
+    ['Bundler 持倉%',(latest.bundlerHoldingPercent*100).toFixed(1)+'%','red'],
+    ['新錢包持倉%',(latest.newWalletHoldingPercent*100).toFixed(1)+'%',''],
+    ['流動性/市值比',(latest.liquidity/latest.marketCap*100).toFixed(2)+'%',''],
+    ['24h 高/低','$'+latest.priceHigh24h.toFixed(2)+' / $'+latest.priceLow24h.toFixed(2),''],
+  ].map(([k,v,c])=>`<div class="row"><span class="k">${k}</span><span class="v ${c}">${v}</span></div>`).join('');
+}
+
+function renderSignals(signals) {
+  const el = document.getElementById('signalList');
+  if(!signals.length){el.innerHTML='<div style="color:#8b95a5;padding:20px;text-align:center">暫無信號</div>';return;}
+  const CONTRACT = '0xda7ad9dea9397cffddae2f8a052b82f1484252b3';
+  const river = signals.filter(s=>s.contractAddress?.toLowerCase()===CONTRACT);
+  const others = signals.filter(s=>s.contractAddress?.toLowerCase()!==CONTRACT).slice(0,12);
+  let html='';
+  if(river.length) html+='<div style="font-size:13px;color:#00d4aa;margin-bottom:8px">🎯 River 信號</div>'+river.map(s=>sigHtml(s,true)).join('');
+  else html+='<div style="background:#141924;border:1px solid #1e2939;border-radius:10px;padding:12px;margin-bottom:10px;color:#8b95a5;font-size:13px">目前無 River 活躍信號，以下為 BSC 鏈聰明錢動態</div>';
+  if(others.length) html+='<div style="font-size:13px;color:#8b95a5;margin:12px 0 8px">📋 BSC 其他信號</div>'+others.map(s=>sigHtml(s,false)).join('');
+  el.innerHTML=html;
+}
+
+function sigHtml(s,isRiver){
+  const gc=s.maxGain>=0?'green':'red';
+  return`<div class="signal-item"><div class="dir ${s.direction}">${s.direction==='buy'?'買入':'賣出'}</div><div class="sig-info"><div class="name">${s.ticker}${isRiver?'<span class="river-tag">RIVER</span>':''} <span style="color:#555;font-size:11px">${s.status}</span></div><div class="detail">聰明錢×${s.smartMoneyCount} · 觸發$${s.alertPrice.toFixed(6)} · 現$${s.currentPrice.toFixed(6)} · ${s.signalTriggerTime}</div></div><div class="gain ${gc}">${s.maxGain>=0?'+':''}${s.maxGain.toFixed(1)}%</div></div>`;
+}
+
+async function load(){
+  try{
+    const [hist,sigs]=await Promise.all([fetch(DATA_URL+'?t='+Date.now()).then(r=>r.json()).catch(()=>[]),fetch(SIGNALS_URL+'?t='+Date.now()).then(r=>r.json()).catch(()=>[])]);
+    renderHistory(hist);
+    renderSignals(sigs);
+  }catch(e){console.error(e)}
+}
+load();
+// Auto reload every 5 min to check for new data
+setInterval(load, 300000);
+</script>
+</body>
+</html>

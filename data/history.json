@@ -1,0 +1,26 @@
+[
+  {
+    "timestamp": "2026-03-29T13:11:14Z",
+    "price": 14.170279023419916,
+    "marketCap": 598518337.864181,
+    "volume24h": 9269443.743836045,
+    "volume24hBuy": 4583052.769836876,
+    "volume24hSell": 4686390.973999171,
+    "holders": 54971,
+    "smartMoneyHolders": 6,
+    "smartMoneyHoldingPercent": 0.042921,
+    "kolHolders": 18,
+    "kolHoldingPercent": 0.003682,
+    "proHolders": 72,
+    "proHoldingPercent": 0.003392,
+    "newWalletHolders": 14832,
+    "newWalletHoldingPercent": 0.159595,
+    "bundlerHoldingPercent": 0.33055,
+    "liquidity": 2242448.711564414,
+    "top10HoldersPercentage": 87.20028450761887,
+    "percentChange24h": -5.92,
+    "fdv": 598518338.0059801,
+    "priceHigh24h": 16.314367309521064,
+    "priceLow24h": 13.267224822504893
+  }
+]
