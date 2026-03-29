@@ -65,6 +65,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="card"><div class="label">📢 KOL</div><div class="value yellow" id="kolHolders">--</div><div class="sub" id="kolPercent">--</div></div>
   <div class="card"><div class="label">流動性</div><div class="value" id="liquidity">--</div><div class="sub" id="liqRatio">--</div></div>
   <div class="card"><div class="label">新錢包</div><div class="value" id="newWallet">--</div><div class="sub" id="newWalletPct">--</div></div>
+  <div class="card"><div class="label">📐 合約 OI</div><div class="value blue" id="oiVal">--</div><div class="sub" id="oiInfo">--</div></div>
 </div>
 
 <div class="section">
@@ -79,6 +80,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
   <h2>👥 持幣者數量變化</h2>
   <div class="chart-box"><canvas id="holdersChart"></canvas></div>
+
+  <h2>🏷️ 持倉者類型分布變化</h2>
+  <div class="chart-box"><canvas id="holderTypesChart"></canvas></div>
+
+  <h2>📐 合約未平倉量 (OI)</h2>
+  <div class="chart-box"><canvas id="oiChart"></canvas></div>
 </div>
 
 <div class="section">
@@ -184,6 +191,32 @@ function renderHistory(data) {
   makeChart('holdersChart', labels, [{
     label:'持幣者', data:data.map(d=>d.holders), borderColor:'#a78bfa', backgroundColor:'#a78bfa15', fill:true, pointRadius:data.length>100?0:2, borderWidth:2, tension:.3
   }]);
+
+  // OI card
+  if(latest.openInterest !== undefined) {
+    const oiUsd = latest.openInterest * latest.markPrice;
+    document.getElementById('oiVal').textContent = fmt(oiUsd);
+    document.getElementById('oiInfo').textContent = `${latest.openInterest.toLocaleString()} RIVER · FR: ${(latest.fundingRate*100).toFixed(4)}%`;
+  }
+
+  // Holder types over time chart
+  makeChart('holderTypesChart', labels, [
+    {label:'聰明錢%', data:data.map(d=>(d.smartMoneyHoldingPercent||0)*100), borderColor:'#00d4aa', backgroundColor:'#00d4aa22', fill:true, pointRadius:0, borderWidth:2, tension:.3},
+    {label:'KOL%', data:data.map(d=>(d.kolHoldingPercent||0)*100), borderColor:'#ffd93d', backgroundColor:'#ffd93d22', fill:true, pointRadius:0, borderWidth:2, tension:.3},
+    {label:'專業投資者%', data:data.map(d=>(d.proHoldingPercent||0)*100), borderColor:'#00b4d8', backgroundColor:'#00b4d822', fill:true, pointRadius:0, borderWidth:2, tension:.3},
+    {label:'新錢包%', data:data.map(d=>(d.newWalletHoldingPercent||0)*100), borderColor:'#a78bfa', backgroundColor:'#a78bfa22', fill:true, pointRadius:0, borderWidth:2, tension:.3},
+    {label:'Bundler%', data:data.map(d=>(d.bundlerHoldingPercent||0)*100), borderColor:'#ff6b6b', backgroundColor:'#ff6b6b22', fill:true, pointRadius:0, borderWidth:2, tension:.3},
+  ], {yCallback: v=>v.toFixed(2)+'%'});
+
+  // OI chart (dual axis: OI amount + OI value in USD)
+  const oiData = data.filter(d => d.openInterest !== undefined);
+  if(oiData.length) {
+    const oiLabels = oiData.map(d => new Date(d.timestamp));
+    makeChart('oiChart', oiLabels, [
+      {label:'OI (RIVER)', data:oiData.map(d=>d.openInterest), borderColor:'#00b4d8', backgroundColor:'#00b4d822', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y'},
+      {label:'OI 價值 (USD)', data:oiData.map(d=>d.openInterest * (d.markPrice||d.price)), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y1'},
+    ], {y1:true, yCallback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v, y1Callback:v=>'$'+(v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v)});
+  }
 
   // Pie chart
   const pd = [latest.smartMoneyHoldingPercent*100, latest.kolHoldingPercent*100, latest.proHoldingPercent*100, latest.newWalletHoldingPercent*100, latest.bundlerHoldingPercent*100];

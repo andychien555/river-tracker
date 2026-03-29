@@ -50,9 +50,25 @@ if echo "$DYN" | jq -e '.data.price' > /dev/null 2>&1; then
     priceLow24h: (.data.priceLow24h | tonumber)
   }')
 
+  # Fetch OI data from Binance Futures
+  OI_RAW=$(curl -sf "https://fapi.binance.com/fapi/v1/openInterest?symbol=RIVERUSDT" 2>/dev/null || echo '{}')
+  OI_VAL=$(echo "$OI_RAW" | jq -r '.openInterest // "0"')
+  
+  # Fetch OI + mark price for value calculation
+  MARK_RAW=$(curl -sf "https://fapi.binance.com/fapi/v1/premiumIndex?symbol=RIVERUSDT" 2>/dev/null || echo '{}')
+  MARK_PRICE=$(echo "$MARK_RAW" | jq -r '.markPrice // "0"')
+  FUNDING_RATE=$(echo "$MARK_RAW" | jq -r '.lastFundingRate // "0"')
+
+  # Add OI fields to snapshot
+  SNAPSHOT=$(echo "$SNAPSHOT" | jq --arg oi "$OI_VAL" --arg mp "$MARK_PRICE" --arg fr "$FUNDING_RATE" '. + {
+    openInterest: ($oi | tonumber),
+    markPrice: ($mp | tonumber),
+    fundingRate: ($fr | tonumber)
+  }')
+
   # Append to history (keep last 2000 entries ~41 days at 30min intervals)
   jq --argjson snap "$SNAPSHOT" '. + [$snap] | .[-2000:]' "$HISTORY_FILE" > "$HISTORY_FILE.tmp" && mv "$HISTORY_FILE.tmp" "$HISTORY_FILE"
-  echo "✅ Snapshot saved at $NOW_ISO - Price: $(echo "$SNAPSHOT" | jq '.price')"
+  echo "✅ Snapshot saved at $NOW_ISO - Price: $(echo "$SNAPSHOT" | jq '.price') - OI: $OI_VAL"
 else
   echo "❌ Failed to fetch data"
   exit 1
