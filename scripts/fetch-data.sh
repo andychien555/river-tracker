@@ -66,6 +66,23 @@ if echo "$DYN" | jq -e '.data.price' > /dev/null 2>&1; then
     fundingRate: ($fr | tonumber)
   }')
 
+  # Fetch long/short ratio
+  LSR_RAW=$(curl -sf "https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=RIVERUSDT&period=5m&limit=1" 2>/dev/null || echo '[]')
+  LSR_VAL=$(echo "$LSR_RAW" | jq -r '.[0].longShortRatio // "0"')
+  LONG_PCT=$(echo "$LSR_RAW" | jq -r '.[0].longAccount // "0"')
+  SHORT_PCT=$(echo "$LSR_RAW" | jq -r '.[0].shortAccount // "0"')
+
+  # Top trader long/short
+  TLS_RAW=$(curl -sf "https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol=RIVERUSDT&period=5m&limit=1" 2>/dev/null || echo '[]')
+  TLS_VAL=$(echo "$TLS_RAW" | jq -r '.[0].longShortRatio // "0"')
+
+  SNAPSHOT=$(echo "$SNAPSHOT" | jq --arg lsr "$LSR_VAL" --arg lp "$LONG_PCT" --arg sp "$SHORT_PCT" --arg tls "$TLS_VAL" '. + {
+    longShortRatio: ($lsr | tonumber),
+    longPercent: ($lp | tonumber),
+    shortPercent: ($sp | tonumber),
+    topTraderLSRatio: ($tls | tonumber)
+  }')
+
   # Append to history (keep last 2000 entries ~41 days at 30min intervals)
   jq --argjson snap "$SNAPSHOT" '. + [$snap] | .[-2000:]' "$HISTORY_FILE" > "$HISTORY_FILE.tmp" && mv "$HISTORY_FILE.tmp" "$HISTORY_FILE"
   echo "✅ Snapshot saved at $NOW_ISO - Price: $(echo "$SNAPSHOT" | jq '.price') - OI: $OI_VAL"

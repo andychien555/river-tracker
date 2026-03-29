@@ -66,11 +66,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="card"><div class="label">流動性</div><div class="value" id="liquidity">--</div><div class="sub" id="liqRatio">--</div></div>
   <div class="card"><div class="label">新錢包</div><div class="value" id="newWallet">--</div><div class="sub" id="newWalletPct">--</div></div>
   <div class="card"><div class="label">📐 合約 OI</div><div class="value blue" id="oiVal">--</div><div class="sub" id="oiInfo">--</div></div>
+  <div class="card"><div class="label">⚖️ 多空比</div><div class="value" id="lsrVal">--</div><div class="sub" id="lsrInfo">--</div></div>
 </div>
 
 <div class="section">
   <h2>📈 歷史價格走勢（每 30 分鐘快照）</h2>
   <div class="chart-box"><canvas id="priceHistoryChart"></canvas></div>
+
+  <h2>🏷️ 持倉者類型分布變化</h2>
+  <div class="chart-box"><canvas id="holderTypesChart"></canvas></div>
+
+  <h2>📐 合約未平倉量 (OI)</h2>
+  <div class="chart-box"><canvas id="oiChart"></canvas></div>
+
+  <h2>⚖️ 聰明錢多空比變化</h2>
+  <div class="chart-box"><canvas id="lsrChart"></canvas></div>
 
   <h2>🧠 聰明錢持倉變化</h2>
   <div class="chart-box"><canvas id="smChart"></canvas></div>
@@ -80,12 +90,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
   <h2>👥 持幣者數量變化</h2>
   <div class="chart-box"><canvas id="holdersChart"></canvas></div>
-
-  <h2>🏷️ 持倉者類型分布變化</h2>
-  <div class="chart-box"><canvas id="holderTypesChart"></canvas></div>
-
-  <h2>📐 合約未平倉量 (OI)</h2>
-  <div class="chart-box"><canvas id="oiChart"></canvas></div>
 </div>
 
 <div class="section">
@@ -197,6 +201,25 @@ function renderHistory(data) {
     const oiUsd = latest.openInterest * latest.markPrice;
     document.getElementById('oiVal').textContent = fmt(oiUsd);
     document.getElementById('oiInfo').textContent = `${latest.openInterest.toLocaleString()} RIVER · FR: ${(latest.fundingRate*100).toFixed(4)}%`;
+  }
+
+  // Long/Short Ratio card
+  if(latest.longShortRatio !== undefined) {
+    const lsr = latest.longShortRatio;
+    const lsrEl = document.getElementById('lsrVal');
+    lsrEl.textContent = lsr.toFixed(2);
+    lsrEl.className = 'value ' + (lsr >= 1 ? 'green' : 'red');
+    document.getElementById('lsrInfo').innerHTML = `多 <span class="green">${(latest.longPercent*100).toFixed(1)}%</span> · 空 <span class="red">${(latest.shortPercent*100).toFixed(1)}%</span>`;
+  }
+
+  // Long/Short Ratio chart
+  const lsrData = data.filter(d => d.longShortRatio !== undefined);
+  if(lsrData.length) {
+    const lsrLabels = lsrData.map(d => new Date(d.timestamp));
+    makeChart('lsrChart', lsrLabels, [
+      {label:'多空比', data:lsrData.map(d=>d.longShortRatio), borderColor:'#00d4aa', backgroundColor:'#00d4aa22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y'},
+      {label:'大戶多空比', data:lsrData.map(d=>d.topTraderLSRatio||0), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y'},
+    ], {yCallback: v=>v.toFixed(2)});
   }
 
   // Holder types over time chart
