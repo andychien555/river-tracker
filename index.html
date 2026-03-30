@@ -218,17 +218,13 @@ function renderHistory(data) {
     document.getElementById('smLsrInfo').innerHTML = `多 <span class="green">${fmt(latest.smLongNotional)}</span> · 空 <span class="red">${fmt(latest.smShortNotional)}</span> · 🐳 ${latest.smLongWhales||0}多/${latest.smShortWhales||0}空`;
   }
 
-  // Smart Money Long/Short chart (dual axis: notional + ratio)
-  const smLsrData = data.filter(d => d.smLongNotional !== undefined);
-  if(smLsrData.length) {
-    const smLsrLabels = smLsrData.map(d => new Date(d.timestamp));
-    makeChart('lsrChart', smLsrLabels, [
-      {label:'聰明錢做多 (USD)', data:smLsrData.map(d=>d.smLongNotional||0), borderColor:'#00d4aa', backgroundColor:'#00d4aa22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y'},
-      {label:'聰明錢做空 (USD)', data:smLsrData.map(d=>d.smShortNotional||0), borderColor:'#ff6b6b', backgroundColor:'#ff6b6b22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y'},
-      {label:'聰明錢多空比', data:smLsrData.map(d=>d.smShortNotional>0?(d.smLongNotional/d.smShortNotional):0), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y1'},
-      {label:'大戶持倉多空比', data:smLsrData.map(d=>d.topTraderLSRatio||0), borderColor:'#a78bfa', pointRadius:0, borderWidth:2, borderDash:[3,2], tension:.3, yAxisID:'y1'},
-    ], {y1:true, yCallback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':'$'+v, y1Callback:v=>v.toFixed(2)});
-  }
+  // Smart Money Long/Short chart (dual axis: notional + ratio) — uses shared labels
+  makeChart('lsrChart', labels, [
+    {label:'聰明錢做多 (USD)', data:data.map(d=>d.smLongNotional!=null?d.smLongNotional:null), borderColor:'#00d4aa', backgroundColor:'#00d4aa22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y', spanGaps:true},
+    {label:'聰明錢做空 (USD)', data:data.map(d=>d.smShortNotional!=null?d.smShortNotional:null), borderColor:'#ff6b6b', backgroundColor:'#ff6b6b22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y', spanGaps:true},
+    {label:'聰明錢多空比', data:data.map(d=>d.smShortNotional>0?(d.smLongNotional/d.smShortNotional):null), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y1', spanGaps:true},
+    {label:'大戶持倉多空比', data:data.map(d=>d.topTraderLSRatio!=null?d.topTraderLSRatio:null), borderColor:'#a78bfa', pointRadius:0, borderWidth:2, borderDash:[3,2], tension:.3, yAxisID:'y1', spanGaps:true},
+  ], {y1:true, yCallback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':'$'+v, y1Callback:v=>v.toFixed(2)});
 
   // Holder types over time chart
   makeChart('holderTypesChart', labels, [
@@ -239,15 +235,11 @@ function renderHistory(data) {
     {label:'Bundler%', data:data.map(d=>(d.bundlerHoldingPercent||0)*100), borderColor:'#ff6b6b', backgroundColor:'#ff6b6b22', fill:true, pointRadius:0, borderWidth:2, tension:.3},
   ], {yCallback: v=>v.toFixed(2)+'%'});
 
-  // OI chart (dual axis: OI amount + OI value in USD)
-  const oiData = data.filter(d => d.openInterest !== undefined);
-  if(oiData.length) {
-    const oiLabels = oiData.map(d => new Date(d.timestamp));
-    makeChart('oiChart', oiLabels, [
-      {label:'OI (RIVER)', data:oiData.map(d=>d.openInterest), borderColor:'#00b4d8', backgroundColor:'#00b4d822', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y'},
-      {label:'OI 價值 (USD)', data:oiData.map(d=>d.openInterest * (d.markPrice||d.price)), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y1'},
-    ], {y1:true, yCallback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v, y1Callback:v=>'$'+(v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v)});
-  }
+  // OI chart (dual axis: OI amount + OI value in USD) — uses shared labels
+  makeChart('oiChart', labels, [
+    {label:'OI (RIVER)', data:data.map(d=>d.openInterest!=null?d.openInterest:null), borderColor:'#00b4d8', backgroundColor:'#00b4d822', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y', spanGaps:true},
+    {label:'OI 價值 (USD)', data:data.map(d=>d.openInterest!=null?d.openInterest*(d.markPrice||d.price):null), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y1', spanGaps:true},
+  ], {y1:true, yCallback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v, y1Callback:v=>'$'+(v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v)});
 
   // Pie chart
   const pd = [latest.smartMoneyHoldingPercent*100, latest.kolHoldingPercent*100, latest.proHoldingPercent*100, latest.newWalletHoldingPercent*100, latest.bundlerHoldingPercent*100];
