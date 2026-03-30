@@ -22,6 +22,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .section h2{font-size:16px;margin:14px 0 8px;color:#c1c8d4}
 .chart-box{background:#141924;border:1px solid #1e2939;border-radius:10px;padding:16px;margin-bottom:14px}
 .chart-box canvas{width:100%!important;max-height:300px}
+.chart-desc{font-size:11px;color:#6b7585;margin:-6px 0 10px;line-height:1.5}
 .tabs{display:flex;gap:6px;margin-bottom:10px}
 .tabs button{background:#1a1f2e;border:1px solid #1e2939;color:#8b95a5;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px}
 .tabs button.active{background:#00d4aa22;border-color:#00d4aa;color:#00d4aa}
@@ -70,25 +71,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 </div>
 
 <div class="section">
-  <h2>📈 歷史價格走勢（每 30 分鐘快照）</h2>
+  <h2>📈 歷史價格走勢</h2>
+  <div class="chart-desc">來源：Binance Web3 API · 每 30 分鐘快照鏈上即時價格</div>
   <div class="chart-box"><canvas id="priceHistoryChart"></canvas></div>
 
   <h2>🏷️ 持倉者類型分布變化</h2>
+  <div class="chart-desc">來源：Binance Web3 API · 鏈上錢包分類（聰明錢、KOL、專業投資者、新錢包、Bundler）各自持倉佔比</div>
   <div class="chart-box"><canvas id="holderTypesChart"></canvas></div>
 
   <h2>📐 合約未平倉量 (OI)</h2>
+  <div class="chart-desc">來源：Binance Futures API · RIVERUSDT 永續合約的未平倉合約數量及 USD 價值</div>
   <div class="chart-box"><canvas id="oiChart"></canvas></div>
 
   <h2>⚖️ 聰明錢多空比變化</h2>
+  <div class="chart-desc">來源：Binance Smart Money API · 聰明錢（含鯨魚）的做多/做空資金量 (USD)，多空比 = 做多金額 ÷ 做空金額。大戶持倉多空比來自 Futures Top Traders（前 20% 大戶的持倉量比值）</div>
   <div class="chart-box"><canvas id="lsrChart"></canvas></div>
 
   <h2>🧠 聰明錢持倉變化</h2>
+  <div class="chart-desc">來源：Binance Web3 API · 鏈上被標記為聰明錢的錢包數量及其持倉佔總供應量的百分比</div>
   <div class="chart-box"><canvas id="smChart"></canvas></div>
 
   <h2>📊 成交量趨勢</h2>
+  <div class="chart-desc">來源：Binance Web3 API · 過去 24 小時的鏈上交易量，分為買入與賣出</div>
   <div class="chart-box"><canvas id="volumeChart"></canvas></div>
 
   <h2>👥 持幣者數量變化</h2>
+  <div class="chart-desc">來源：Binance Web3 API · 鏈上持有該代幣的獨立錢包地址總數</div>
   <div class="chart-box"><canvas id="holdersChart"></canvas></div>
 </div>
 
@@ -217,7 +225,8 @@ function renderHistory(data) {
     makeChart('lsrChart', smLsrLabels, [
       {label:'聰明錢做多 (USD)', data:smLsrData.map(d=>d.smLongNotional||0), borderColor:'#00d4aa', backgroundColor:'#00d4aa22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y'},
       {label:'聰明錢做空 (USD)', data:smLsrData.map(d=>d.smShortNotional||0), borderColor:'#ff6b6b', backgroundColor:'#ff6b6b22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y'},
-      {label:'多空比', data:smLsrData.map(d=>d.smShortNotional>0?(d.smLongNotional/d.smShortNotional):0), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y1'},
+      {label:'聰明錢多空比', data:smLsrData.map(d=>d.smShortNotional>0?(d.smLongNotional/d.smShortNotional):0), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y1'},
+      {label:'大戶持倉多空比', data:smLsrData.map(d=>d.topTraderLSRatio||0), borderColor:'#a78bfa', pointRadius:0, borderWidth:2, borderDash:[3,2], tension:.3, yAxisID:'y1'},
     ], {y1:true, yCallback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':'$'+v, y1Callback:v=>v.toFixed(2)});
   }
 
