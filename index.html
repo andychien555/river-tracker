@@ -66,7 +66,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="card"><div class="label">流動性</div><div class="value" id="liquidity">--</div><div class="sub" id="liqRatio">--</div></div>
   <div class="card"><div class="label">新錢包</div><div class="value" id="newWallet">--</div><div class="sub" id="newWalletPct">--</div></div>
   <div class="card"><div class="label">📐 合約 OI</div><div class="value blue" id="oiVal">--</div><div class="sub" id="oiInfo">--</div></div>
-  <div class="card"><div class="label">⚖️ 多空比</div><div class="value" id="lsrVal">--</div><div class="sub" id="lsrInfo">--</div></div>
+  <div class="card"><div class="label">⚖️ 聰明錢多空</div><div class="value" id="smLsrVal">--</div><div class="sub" id="smLsrInfo">--</div></div>
 </div>
 
 <div class="section">
@@ -200,23 +200,25 @@ function renderHistory(data) {
     document.getElementById('oiInfo').textContent = `${latest.openInterest.toLocaleString()} RIVER · FR: ${(latest.fundingRate*100).toFixed(4)}%`;
   }
 
-  // Long/Short Ratio card
-  if(latest.longShortRatio !== undefined) {
-    const lsr = latest.longShortRatio;
-    const lsrEl = document.getElementById('lsrVal');
-    lsrEl.textContent = lsr.toFixed(2);
-    lsrEl.className = 'value ' + (lsr >= 1 ? 'green' : 'red');
-    document.getElementById('lsrInfo').innerHTML = `多 <span class="green">${(latest.longPercent*100).toFixed(1)}%</span> · 空 <span class="red">${(latest.shortPercent*100).toFixed(1)}%</span>`;
+  // Smart Money Long/Short card
+  if(latest.smLongNotional !== undefined) {
+    const smTotal = latest.smLongNotional + latest.smShortNotional;
+    const smRatio = latest.smShortNotional > 0 ? (latest.smLongNotional / latest.smShortNotional) : 0;
+    const smEl = document.getElementById('smLsrVal');
+    smEl.textContent = smRatio.toFixed(2);
+    smEl.className = 'value ' + (smRatio >= 1 ? 'green' : 'red');
+    document.getElementById('smLsrInfo').innerHTML = `多 <span class="green">${fmt(latest.smLongNotional)}</span> · 空 <span class="red">${fmt(latest.smShortNotional)}</span> · 🐳 ${latest.smLongWhales||0}多/${latest.smShortWhales||0}空`;
   }
 
-  // Long/Short Ratio chart
-  const lsrData = data.filter(d => d.longShortRatio !== undefined);
-  if(lsrData.length) {
-    const lsrLabels = lsrData.map(d => new Date(d.timestamp));
-    makeChart('lsrChart', lsrLabels, [
-      {label:'多空比', data:lsrData.map(d=>d.longShortRatio), borderColor:'#00d4aa', backgroundColor:'#00d4aa22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y'},
-      {label:'大戶多空比', data:lsrData.map(d=>d.topTraderLSRatio||0), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y'},
-    ], {yCallback: v=>v.toFixed(2)});
+  // Smart Money Long/Short chart (dual axis: notional + ratio)
+  const smLsrData = data.filter(d => d.smLongNotional !== undefined);
+  if(smLsrData.length) {
+    const smLsrLabels = smLsrData.map(d => new Date(d.timestamp));
+    makeChart('lsrChart', smLsrLabels, [
+      {label:'聰明錢做多 (USD)', data:smLsrData.map(d=>d.smLongNotional||0), borderColor:'#00d4aa', backgroundColor:'#00d4aa22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y'},
+      {label:'聰明錢做空 (USD)', data:smLsrData.map(d=>d.smShortNotional||0), borderColor:'#ff6b6b', backgroundColor:'#ff6b6b22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y'},
+      {label:'多空比', data:smLsrData.map(d=>d.smShortNotional>0?(d.smLongNotional/d.smShortNotional):0), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y1'},
+    ], {y1:true, yCallback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':'$'+v, y1Callback:v=>v.toFixed(2)});
   }
 
   // Holder types over time chart
