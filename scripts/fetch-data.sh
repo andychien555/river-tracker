@@ -76,37 +76,30 @@ if echo "$DYN" | jq -e '.data.price' > /dev/null 2>&1; then
   TLS_RAW=$(curl -sf "https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol=RIVERUSDT&period=5m&limit=1" 2>/dev/null || echo '[]')
   TLS_VAL=$(echo "$TLS_RAW" | jq -r '.[0].longShortRatio // "0"')
 
-  # Binance Smart Money signal (futures)
-  SM_RAW=$(curl -sf "https://www.binance.com/bapi/futures/v1/public/future/smart-money/signal/list?symbol=RIVERUSDT&timeRange=30m&side=BOTH" 2>/dev/null || echo '{"data":[]}')
-  SM_LONG_NOTIONAL=$(echo "$SM_RAW" | jq -r '.data[0].longNotional // 0')
-  SM_SHORT_NOTIONAL=$(echo "$SM_RAW" | jq -r '.data[0].shortNotional // 0')
-  SM_NET_NOTIONAL=$(echo "$SM_RAW" | jq -r '.data[0].netNotional // 0')
-  SM_LONG_TRADERS=$(echo "$SM_RAW" | jq -r '.data[0].longTraders // 0')
-  SM_SHORT_TRADERS=$(echo "$SM_RAW" | jq -r '.data[0].shortTraders // 0')
-  SM_LONG_WHALES=$(echo "$SM_RAW" | jq -r '.data[0].longWhales // 0')
-  SM_SHORT_WHALES=$(echo "$SM_RAW" | jq -r '.data[0].shortWhales // 0')
-  SM_LONG_AVG_PRICE=$(echo "$SM_RAW" | jq -r '.data[0].longAvgEntryPrice // 0')
-  SM_SHORT_AVG_PRICE=$(echo "$SM_RAW" | jq -r '.data[0].shortAvgEntryPrice // 0')
+  # Binance Smart Money overview (futures)
+  SM_RAW=$(curl -sf "https://www.binance.com/bapi/futures/v1/public/future/smart-money/signal/overview?symbol=RIVERUSDT" 2>/dev/null || echo '{"data":{}}')
 
   SNAPSHOT=$(echo "$SNAPSHOT" | jq --arg lsr "$LSR_VAL" --arg lp "$LONG_PCT" --arg sp "$SHORT_PCT" \
-    --arg smLong "$SM_LONG_NOTIONAL" --arg smShort "$SM_SHORT_NOTIONAL" --arg smNet "$SM_NET_NOTIONAL" \
-    --arg smLongT "$SM_LONG_TRADERS" --arg smShortT "$SM_SHORT_TRADERS" \
-    --arg smLongW "$SM_LONG_WHALES" --arg smShortW "$SM_SHORT_WHALES" \
-    --arg smLongP "$SM_LONG_AVG_PRICE" --arg smShortP "$SM_SHORT_AVG_PRICE" \
-    --arg tls "$TLS_VAL" '. + {
+    --arg tls "$TLS_VAL" --argjson sm "$(echo "$SM_RAW" | jq '.data // {}')" '. + {
     longShortRatio: ($lsr | tonumber),
     longPercent: ($lp | tonumber),
     shortPercent: ($sp | tonumber),
     topTraderLSRatio: ($tls | tonumber),
-    smLongNotional: ($smLong | tonumber),
-    smShortNotional: ($smShort | tonumber),
-    smNetNotional: ($smNet | tonumber),
-    smLongTraders: ($smLongT | tonumber),
-    smShortTraders: ($smShortT | tonumber),
-    smLongWhales: ($smLongW | tonumber),
-    smShortWhales: ($smShortW | tonumber),
-    smLongAvgPrice: ($smLongP | tonumber),
-    smShortAvgPrice: ($smShortP | tonumber)
+    smLongShortRatio: ($sm.longShortRatio // 0),
+    smTotalPositions: ($sm.totalPositions // 0),
+    smTotalTraders: ($sm.totalTraders // 0),
+    smLongTraders: ($sm.longTraders // 0),
+    smShortTraders: ($sm.shortTraders // 0),
+    smLongNotional: (($sm.longTradersQty // 0) * ($sm.longTradersAvgEntryPrice // 0)),
+    smShortNotional: (($sm.shortTradersQty // 0) * ($sm.shortTradersAvgEntryPrice // 0)),
+    smLongWhales: ($sm.longWhales // 0),
+    smShortWhales: ($sm.shortWhales // 0),
+    smLongWhaleNotional: (($sm.longWhalesQty // 0) * ($sm.longWhalesAvgEntryPrice // 0)),
+    smShortWhaleNotional: (($sm.shortWhalesQty // 0) * ($sm.shortWhalesAvgEntryPrice // 0)),
+    smLongProfitTraders: ($sm.longProfitTraders // 0),
+    smShortProfitTraders: ($sm.shortProfitTraders // 0),
+    smLongProfitWhales: ($sm.longProfitWhales // 0),
+    smShortProfitWhales: ($sm.shortProfitWhales // 0)
   }')
 
   # Append to history (keep last 2000 entries ~41 days at 30min intervals)

@@ -232,20 +232,18 @@ function renderHistory(data) {
   }
 
   // Smart Money Long/Short card
-  if(latest.smLongNotional !== undefined) {
-    const smTotal = latest.smLongNotional + latest.smShortNotional;
-    const smRatio = latest.smShortNotional > 0 ? (latest.smLongNotional / latest.smShortNotional) : 0;
+  if(latest.smLongShortRatio !== undefined) {
     const smEl = document.getElementById('smLsrVal');
-    smEl.textContent = smRatio.toFixed(2);
-    smEl.className = 'value ' + (smRatio >= 1 ? 'green' : 'red');
-    document.getElementById('smLsrInfo').innerHTML = `多 <span class="green">${fmt(latest.smLongNotional)}</span> · 空 <span class="red">${fmt(latest.smShortNotional)}</span> · 🐳 ${latest.smLongWhales||0}多/${latest.smShortWhales||0}空`;
+    smEl.textContent = latest.smLongShortRatio.toFixed(4);
+    smEl.className = 'value ' + (latest.smLongShortRatio >= 1 ? 'green' : 'red');
+    document.getElementById('smLsrInfo').innerHTML = `多 <span class="green">${fmt(latest.smLongNotional)}</span> · 空 <span class="red">${fmt(latest.smShortNotional)}</span> · 🐳 ${latest.smLongWhales||0}多/${latest.smShortWhales||0}空 · 👤 ${latest.smTotalTraders||0}人`;
   }
 
   // Smart Money Long/Short chart (dual axis: notional + ratio) — uses shared labels
   makeChart('lsrChart', labels, [
     {label:'聰明錢做多 (USD)', data:data.map(d=>d.smLongNotional!=null?d.smLongNotional:null), borderColor:'#00d4aa', backgroundColor:'#00d4aa22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y', spanGaps:true},
     {label:'聰明錢做空 (USD)', data:data.map(d=>d.smShortNotional!=null?d.smShortNotional:null), borderColor:'#ff6b6b', backgroundColor:'#ff6b6b22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y', spanGaps:true},
-    {label:'名義做多/做空比率', data:data.map(d=>d.smShortNotional>0?(d.smLongNotional/d.smShortNotional):null), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y1', spanGaps:true},
+    {label:'名義做多/做空比率', data:data.map(d=>d.smLongShortRatio!=null?d.smLongShortRatio:null), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y1', spanGaps:true},
     {label:'大戶持倉多空比', data:data.map(d=>d.topTraderLSRatio!=null?d.topTraderLSRatio:null), borderColor:'#a78bfa', pointRadius:0, borderWidth:2, borderDash:[3,2], tension:.3, yAxisID:'y1', spanGaps:true},
   ], {y1:true, yCallback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':'$'+v, y1Callback:v=>v.toFixed(2)});
 
