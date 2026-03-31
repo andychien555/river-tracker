@@ -110,13 +110,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="chart-desc">來源：Binance Futures API · RIVERUSDT 永續合約的未平倉合約數量及 USD 價值</div>
   <div class="chart-box"><canvas id="oiChart"></canvas></div>
 
-  <h2>🧠 聰明錢持倉變化</h2>
-  <div class="chart-desc">來源：Binance Web3 API · 鏈上被標記為聰明錢的錢包數量及其持倉佔總供應量的百分比</div>
-  <div class="chart-box"><canvas id="smChart"></canvas></div>
-
-  <h2>📊 成交量趨勢</h2>
-  <div class="chart-desc">來源：Binance Web3 API · 過去 24 小時的鏈上交易量，分為買入與賣出</div>
-  <div class="chart-box"><canvas id="volumeChart"></canvas></div>
+<!-- removed -->
 
   <h2>👥 持幣者數量變化</h2>
   <div class="chart-desc">來源：Binance Web3 API · 鏈上持有該代幣的獨立錢包地址總數</div>
@@ -220,18 +214,7 @@ function renderHistory(data) {
     borderColor:'#00d4aa', backgroundColor:'#00d4aa15', fill:true, pointRadius:data.length>100?0:2, borderWidth:2, tension:.3
   }], {yCallback: v=>'$'+v.toFixed(2)});
 
-  // Smart money chart (dual axis)
-  makeChart('smChart', labels, [
-    {label:'聰明錢持倉者', data:data.map(d=>d.smartMoneyHolders), borderColor:'#00d4aa', backgroundColor:'#00d4aa33', fill:true, pointRadius:data.length>100?0:3, borderWidth:2, yAxisID:'y'},
-    {label:'聰明錢持倉%', data:data.map(d=>d.smartMoneyHoldingPercent*100), borderColor:'#ffd93d', pointRadius:data.length>100?0:3, borderWidth:2, borderDash:[5,3], yAxisID:'y1'},
-  ], {y1:true, yCallback:v=>v, y1Callback:v=>v.toFixed(2)+'%'});
-
-  // Volume chart
-  makeChart('volumeChart', labels, [
-    {label:'24h 總量', data:data.map(d=>d.volume24h), borderColor:'#00b4d8', backgroundColor:'#00b4d822', fill:true, pointRadius:0, borderWidth:2, tension:.3},
-    {label:'24h 買入', data:data.map(d=>d.volume24hBuy), borderColor:'#00d4aa66', pointRadius:0, borderWidth:1.5, tension:.3},
-    {label:'24h 賣出', data:data.map(d=>d.volume24hSell), borderColor:'#ff6b6b66', pointRadius:0, borderWidth:1.5, tension:.3},
-  ], {yCallback: v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v});
+// smChart and volumeChart removed
 
   // Holders chart
   makeChart('holdersChart', labels, [{
