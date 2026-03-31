@@ -124,6 +124,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 </div>
 
 <div class="section">
+  <h2>💰 聰明錢合約持倉總覽</h2>
+  <div class="chart-desc">來源：Binance Smart Money Overview API · 即時聰明錢合約持倉明細</div>
+  <div class="two-col">
+    <div class="sm-card">
+      <h3>📊 多空對比</h3>
+      <div id="smOverview"></div>
+      <canvas id="smPositionBar" height="120" style="margin-top:12px"></canvas>
+    </div>
+    <div class="sm-card">
+      <h3>🐳 鯨魚持倉</h3>
+      <div id="smWhaleInfo"></div>
+      <canvas id="smWhalePie" height="160" style="margin-top:12px"></canvas>
+    </div>
+  </div>
+  <div class="two-col" style="margin-top:14px">
+    <div class="sm-card">
+      <h3>📈 獲利狀況</h3>
+      <div id="smProfitInfo"></div>
+    </div>
+    <div class="sm-card">
+      <h3>⏱️ 聰明錢做多/做空人數變化</h3>
+      <canvas id="smTradersChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="section">
   <h2>🧠 持倉分析</h2>
   <div class="two-col">
     <div class="sm-card">
@@ -282,6 +309,72 @@ function renderHistory(data) {
     ['流動性/市值比',(latest.liquidity/latest.marketCap*100).toFixed(2)+'%',''],
     ['24h 高/低','$'+latest.priceHigh24h.toFixed(2)+' / $'+latest.priceLow24h.toFixed(2),''],
   ].map(([k,v,c])=>`<div class="row"><span class="k">${k}</span><span class="v ${c}">${v}</span></div>`).join('');
+
+  // Smart Money Overview section
+  if(latest.smLongShortRatio !== undefined) {
+    const smLongVal = latest.smLongNotional||0;
+    const smShortVal = latest.smShortNotional||0;
+    const smTotal = smLongVal + smShortVal;
+    const smLongPct = smTotal>0?(smLongVal/smTotal*100).toFixed(1):0;
+    const smShortPct = smTotal>0?(smShortVal/smTotal*100).toFixed(1):0;
+
+    document.getElementById('smOverview').innerHTML = [
+      ['名義做多/做空比率', (latest.smLongShortRatio||0).toFixed(4), latest.smLongShortRatio>=1?'green':'red'],
+      ['總持倉價值', fmt(latest.smTotalPositions||0), ''],
+      ['交易者總數', (latest.smTotalTraders||0)+'人', ''],
+      ['做多人數 / 做空人數', `<span class="green">${latest.smLongTraders||0}</span> / <span class="red">${latest.smShortTraders||0}</span>`, ''],
+      ['做多倉位價值', fmt(smLongVal)+' ('+smLongPct+'%)', 'green'],
+      ['做空倉位價值', fmt(smShortVal)+' ('+smShortPct+'%)', 'red'],
+    ].map(([k,v,c])=>`<div class="row"><span class="k">${k}</span><span class="v ${c}">${v}</span></div>`).join('');
+
+    // Position bar chart
+    if(charts.smBar) charts.smBar.destroy();
+    charts.smBar = new Chart(document.getElementById('smPositionBar'),{
+      type:'bar',
+      data:{labels:['做多','做空'],datasets:[{data:[smLongVal,smShortVal],backgroundColor:['#00d4aa','#ff6b6b'],borderWidth:0,borderRadius:6}]},
+      options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmt(ctx.raw)}}},scales:{x:{ticks:{color:'#8b95a5',callback:v=>v>=1e6?(v/1e6).toFixed(0)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v},grid:{color:'#1e2939'}},y:{ticks:{color:'#8b95a5'},grid:{display:false}}}}
+    });
+
+    // Whale info
+    const wLong = latest.smLongWhaleNotional||0;
+    const wShort = latest.smShortWhaleNotional||0;
+    const wTotal = wLong+wShort;
+    document.getElementById('smWhaleInfo').innerHTML = [
+      ['做多鯨魚', `${latest.smLongWhales||0}隻 · ${fmt(wLong)}`, 'green'],
+      ['做空鯨魚', `${latest.smShortWhales||0}隻 · ${fmt(wShort)}`, 'red'],
+      ['鯨魚佔總持倉', smTotal>0?((wTotal/smTotal)*100).toFixed(1)+'%':'--', 'blue'],
+    ].map(([k,v,c])=>`<div class="row"><span class="k">${k}</span><span class="v ${c}">${v}</span></div>`).join('');
+
+    // Whale pie
+    if(charts.whalePie) charts.whalePie.destroy();
+    charts.whalePie = new Chart(document.getElementById('smWhalePie'),{
+      type:'doughnut',
+      data:{labels:['🐳 鯨魚做多','🐳 鯨魚做空','一般做多','一般做空'],datasets:[{data:[wLong,wShort,Math.max(0,smLongVal-wLong),Math.max(0,smShortVal-wShort)],backgroundColor:['#00d4aa','#ff6b6b','#00d4aa66','#ff6b6b66'],borderWidth:0}]},
+      options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#8b95a5',padding:6,font:{size:10}}}}}
+    });
+
+    // Profit info
+    const lProfit = latest.smLongProfitTraders||0;
+    const sProfit = latest.smShortProfitTraders||0;
+    const lTotal = latest.smLongTraders||0;
+    const sTotal = latest.smShortTraders||0;
+    const lwProfit = latest.smLongProfitWhales||0;
+    const swProfit = latest.smShortProfitWhales||0;
+    const lwTotal = latest.smLongWhales||0;
+    const swTotal = latest.smShortWhales||0;
+    document.getElementById('smProfitInfo').innerHTML = [
+      ['做多獲利人數', `${lProfit}/${lTotal}人 (${lTotal>0?(lProfit/lTotal*100).toFixed(0):0}%)`, 'green'],
+      ['做空獲利人數', `${sProfit}/${sTotal}人 (${sTotal>0?(sProfit/sTotal*100).toFixed(0):0}%)`, 'red'],
+      ['🐳 做多鯨魚獲利', `${lwProfit}/${lwTotal}隻 (${lwTotal>0?(lwProfit/lwTotal*100).toFixed(0):0}%)`, 'green'],
+      ['🐳 做空鯨魚獲利', `${swProfit}/${swTotal}隻 (${swTotal>0?(swProfit/swTotal*100).toFixed(0):0}%)`, 'red'],
+    ].map(([k,v,c])=>`<div class="row"><span class="k">${k}</span><span class="v ${c}">${v}</span></div>`).join('');
+
+    // Smart Money traders count over time chart
+    makeChart('smTradersChart', labels, [
+      {label:'做多人數', data:data.map(d=>d.smLongTraders!=null?d.smLongTraders:null), borderColor:'#00d4aa', backgroundColor:'#00d4aa22', fill:true, pointRadius:0, borderWidth:2, tension:.3, spanGaps:true},
+      {label:'做空人數', data:data.map(d=>d.smShortTraders!=null?d.smShortTraders:null), borderColor:'#ff6b6b', backgroundColor:'#ff6b6b22', fill:true, pointRadius:0, borderWidth:2, tension:.3, spanGaps:true},
+    ]);
+  }
 }
 
 function renderSignals(signals) {
