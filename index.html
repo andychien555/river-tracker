@@ -42,7 +42,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .gain{font-size:16px;font-weight:700;min-width:60px;text-align:right}
 .footer{padding:12px 24px;font-size:11px;color:#555;text-align:center;border-top:1px solid #1e2939;margin-top:20px}
 .river-tag{background:#00d4aa22;border:1px solid #00d4aa44;border-radius:4px;padding:1px 6px;font-size:10px;color:#00d4aa;margin-left:6px}
-@media(max-width:768px){.grid{grid-template-columns:1fr 1fr}.two-col{grid-template-columns:1fr}.header h1{font-size:18px}}
+@media(max-width:768px){
+  .grid{grid-template-columns:1fr 1fr;gap:8px;padding:12px}
+  .section{padding:4px 12px}
+  .two-col{grid-template-columns:1fr}
+  .header{padding:14px 12px}
+  .header h1{font-size:18px}
+  .chart-box{padding:10px;margin-bottom:10px}
+  .chart-box canvas{max-height:none;aspect-ratio:4/3}
+  .chart-desc{font-size:10px;margin:-4px 0 8px}
+  .section h2{font-size:14px;margin:12px 0 6px}
+  .card{padding:10px}
+  .card .value{font-size:18px}
+  .card .label{font-size:10px}
+  .card .sub{font-size:11px}
+  .footer{padding:10px 12px}
+}
+@media(max-width:480px){
+  .grid{grid-template-columns:1fr 1fr;gap:6px;padding:8px}
+  .section{padding:4px 8px}
+  .header h1{font-size:16px}
+  .header .meta{font-size:11px}
+  .card .value{font-size:16px}
+  .chart-box canvas{aspect-ratio:3/2}
+}
 </style>
 </head>
 <body>
@@ -105,7 +128,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="two-col">
     <div class="sm-card">
       <h3>持倉者類型分布</h3>
-      <canvas id="holderPie" height="220"></canvas>
+      <canvas id="holderPie"></canvas>
     </div>
     <div class="sm-card">
       <h3>關鍵指標</h3>
@@ -136,7 +159,7 @@ function makeChart(id, labels, datasets, opts={}) {
       x:{type:'time',time:{tooltipFormat:'MM/dd HH:mm'},ticks:{color:'#8b95a5',maxTicksLimit:10},grid:{color:'#1e2939'}},
       y:{ticks:{color:'#8b95a5'},grid:{color:'#1e2939'}}
     },
-    plugins:{legend:{labels:{color:'#8b95a5',font:{size:11}}}}
+    plugins:{legend:{labels:{color:'#8b95a5',font:{size:window.innerWidth<768?9:11},boxWidth:window.innerWidth<768?8:40,padding:window.innerWidth<768?6:10}},tooltip:{position:'nearest'}}
   };
   const merged = JSON.parse(JSON.stringify(defaults));
   if(opts.yCallback) merged.scales.y.ticks.callback = opts.yCallback;
