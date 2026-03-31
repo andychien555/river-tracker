@@ -90,7 +90,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="card"><div class="label">流動性</div><div class="value" id="liquidity">--</div><div class="sub" id="liqRatio">--</div></div>
   <div class="card"><div class="label">新錢包</div><div class="value" id="newWallet">--</div><div class="sub" id="newWalletPct">--</div></div>
   <div class="card"><div class="label">📐 合約 OI</div><div class="value blue" id="oiVal">--</div><div class="sub" id="oiInfo">--</div></div>
-  <div class="card"><div class="label">⚖️ 聰明錢多空</div><div class="value" id="smLsrVal">--</div><div class="sub" id="smLsrInfo">--</div></div>
+  <div class="card"><div class="label">⚖️ 名義做多/做空比率</div><div class="value" id="smLsrVal">--</div><div class="sub" id="smLsrInfo">--</div></div>
 </div>
 
 <div class="section">
@@ -234,11 +234,10 @@ function renderHistory(data) {
   // Smart Money Long/Short card
   if(latest.smLongNotional !== undefined) {
     const smTotal = latest.smLongNotional + latest.smShortNotional;
-    const smLongPct = smTotal > 0 ? (latest.smLongNotional / smTotal * 100) : 0;
-    const smShortPct = smTotal > 0 ? (latest.smShortNotional / smTotal * 100) : 0;
+    const smRatio = latest.smShortNotional > 0 ? (latest.smLongNotional / latest.smShortNotional) : 0;
     const smEl = document.getElementById('smLsrVal');
-    smEl.textContent = smLongPct.toFixed(1) + '%';
-    smEl.className = 'value ' + (smLongPct >= 50 ? 'green' : 'red');
+    smEl.textContent = smRatio.toFixed(2);
+    smEl.className = 'value ' + (smRatio >= 1 ? 'green' : 'red');
     document.getElementById('smLsrInfo').innerHTML = `多 <span class="green">${fmt(latest.smLongNotional)}</span> · 空 <span class="red">${fmt(latest.smShortNotional)}</span> · 🐳 ${latest.smLongWhales||0}多/${latest.smShortWhales||0}空`;
   }
 
@@ -246,9 +245,9 @@ function renderHistory(data) {
   makeChart('lsrChart', labels, [
     {label:'聰明錢做多 (USD)', data:data.map(d=>d.smLongNotional!=null?d.smLongNotional:null), borderColor:'#00d4aa', backgroundColor:'#00d4aa22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y', spanGaps:true},
     {label:'聰明錢做空 (USD)', data:data.map(d=>d.smShortNotional!=null?d.smShortNotional:null), borderColor:'#ff6b6b', backgroundColor:'#ff6b6b22', fill:true, pointRadius:0, borderWidth:2, tension:.3, yAxisID:'y', spanGaps:true},
-    {label:'聰明錢做多%', data:data.map(d=>{const t=(d.smLongNotional||0)+(d.smShortNotional||0);return t>0?d.smLongNotional/t*100:null}), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y1', spanGaps:true},
+    {label:'名義做多/做空比率', data:data.map(d=>d.smShortNotional>0?(d.smLongNotional/d.smShortNotional):null), borderColor:'#ffd93d', pointRadius:0, borderWidth:2, borderDash:[5,3], tension:.3, yAxisID:'y1', spanGaps:true},
     {label:'大戶持倉多空比', data:data.map(d=>d.topTraderLSRatio!=null?d.topTraderLSRatio:null), borderColor:'#a78bfa', pointRadius:0, borderWidth:2, borderDash:[3,2], tension:.3, yAxisID:'y1', spanGaps:true},
-  ], {y1:true, yCallback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':'$'+v, y1Callback:v=>v.toFixed(1)+'%'});
+  ], {y1:true, yCallback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':'$'+v, y1Callback:v=>v.toFixed(2)});
 
   // Holder types over time chart
   makeChart('holderTypesChart', labels, [
