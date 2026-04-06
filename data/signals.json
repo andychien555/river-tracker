@@ -1,17 +1,31 @@
 [
   {
-    "signalId": 25384,
+    "signalId": 25417,
+    "ticker": "714",
+    "direction": "buy",
+    "contractAddress": "0xb7348695a5935f268133fa49707b335f5cce4444",
+    "smartMoneyCount": 3,
+    "alertPrice": 0.000407441132339015,
+    "currentPrice": 0.00030871,
+    "maxGain": 0.7243,
+    "exitRate": 0,
+    "status": "timeout",
+    "signalTriggerTime": "2026-04-05T18:19:35Z",
+    "totalTokenValue": 3582.295530277974932429
+  },
+  {
+    "signalId": 25412,
     "ticker": "SIREN",
     "direction": "buy",
     "contractAddress": "0x997a58129890bbda032231a52ed1ddc845fc18e1",
-    "smartMoneyCount": 3,
-    "alertPrice": 0.25242189655532554,
-    "currentPrice": 0.56154,
-    "maxGain": 1.4022,
-    "exitRate": 12,
+    "smartMoneyCount": 4,
+    "alertPrice": 0.603344951405290986,
+    "currentPrice": 0.58947,
+    "maxGain": 2.0838,
+    "exitRate": 51,
     "status": "timeout",
-    "signalTriggerTime": "2026-04-04T12:16:20Z",
-    "totalTokenValue": 4160.627152415418
+    "signalTriggerTime": "2026-04-05T13:02:13Z",
+    "totalTokenValue": 3299.874811509084356744
   },
   {
     "signalId": 25372,
@@ -20,12 +34,12 @@
     "contractAddress": "0x9f465f7ad7bb42665e22d55bad322f4726a6ffff",
     "smartMoneyCount": 5,
     "alertPrice": 0.000781174392666916,
-    "currentPrice": 0.00011798,
+    "currentPrice": 0.00013433,
     "maxGain": 6.6489,
     "exitRate": 73,
     "status": "timeout",
     "signalTriggerTime": "2026-04-03T16:41:52Z",
-    "totalTokenValue": 4700.061478779723
+    "totalTokenValue": 4700.061478779723272213
   },
   {
     "signalId": 25361,
@@ -34,12 +48,12 @@
     "contractAddress": "0xd6b1569d8e7c6d33c7599935b46bd687b321ffff",
     "smartMoneyCount": 5,
     "alertPrice": 0.000178166664963047,
-    "currentPrice": 4.629e-05,
+    "currentPrice": 0.000035361,
     "maxGain": 0.3407,
     "exitRate": 98,
     "status": "timeout",
     "signalTriggerTime": "2026-04-03T14:52:04Z",
-    "totalTokenValue": 3490.664979089484
+    "totalTokenValue": 3490.664979089483736900
   },
   {
     "signalId": 25338,
@@ -48,12 +62,12 @@
     "contractAddress": "0x6ce931ccb9484c00e7cbc7df0cce7c3d103b4444",
     "smartMoneyCount": 4,
     "alertPrice": 0.000105347197201408,
-    "currentPrice": 3.0093e-05,
+    "currentPrice": 0.000038095,
     "maxGain": 0.5046,
     "exitRate": 7,
     "status": "timeout",
     "signalTriggerTime": "2026-04-03T06:35:47Z",
-    "totalTokenValue": 3903.7942050341635
+    "totalTokenValue": 3903.794205034163491295
   },
   {
     "signalId": 25102,
@@ -62,12 +76,12 @@
     "contractAddress": "0x7edc00740cbc8a389a4683d448cd2dea8ed24444",
     "smartMoneyCount": 9,
     "alertPrice": 0.000788524814210933,
-    "currentPrice": 7.1869e-05,
+    "currentPrice": 0.000069432,
     "maxGain": 1.7234,
     "exitRate": 52,
     "status": "timeout",
     "signalTriggerTime": "2026-04-01T13:11:28Z",
-    "totalTokenValue": 14978.128583865238
+    "totalTokenValue": 14978.128583865237696476
   },
   {
     "signalId": 24984,
@@ -76,12 +90,12 @@
     "contractAddress": "0x46e2a3077ce0de38ab4b7accb55a5e746a9c4444",
     "smartMoneyCount": 3,
     "alertPrice": 0.000962809824107939,
-    "currentPrice": 0.00016777,
+    "currentPrice": 0.00014954,
     "maxGain": 0.0809,
     "exitRate": 23,
     "status": "timeout",
     "signalTriggerTime": "2026-03-31T16:47:31Z",
-    "totalTokenValue": 3209.735250824105
+    "totalTokenValue": 3209.735250824105329900
   },
   {
     "signalId": 24942,
@@ -90,12 +104,12 @@
     "contractAddress": "0x887ee6d7cba3d342530d5defbeb13a7409d34444",
     "smartMoneyCount": 8,
     "alertPrice": 0.000128119897324407,
-    "currentPrice": 1.0613e-05,
+    "currentPrice": 0.000011054,
     "maxGain": 1.0637,
     "exitRate": 100,
     "status": "exitRate",
     "signalTriggerTime": "2026-03-31T10:27:40Z",
-    "totalTokenValue": 3934.9251247020184
+    "totalTokenValue": 3934.925124702018435867
   },
   {
     "signalId": 24922,
@@ -104,12 +118,12 @@
     "contractAddress": "0x2919f0dd1ab8cd6854de50b21c70822597034444",
     "smartMoneyCount": 7,
     "alertPrice": 0.000125872909882747,
-    "currentPrice": 1.1242e-05,
+    "currentPrice": 0.000014002,
     "maxGain": 0,
     "exitRate": 47,
     "status": "timeout",
     "signalTriggerTime": "2026-03-31T08:43:33Z",
-    "totalTokenValue": 3642.363026724109
+    "totalTokenValue": 3642.363026724109114459
   },
   {
     "signalId": 24920,
@@ -117,13 +131,13 @@
     "direction": "buy",
     "contractAddress": "0xb3b3be82fedab9b82cebf02d784fc02b78b44444",
     "smartMoneyCount": 5,
-    "alertPrice": 0.00109617107007968,
-    "currentPrice": 5.0829e-05,
-    "maxGain": 0.1976,
+    "alertPrice": 0.001096171070079680,
+    "currentPrice": 0.000048391,
+    "maxGain": 0.0943,
     "exitRate": 23,
     "status": "timeout",
     "signalTriggerTime": "2026-03-31T07:18:05Z",
-    "totalTokenValue": 3251.350063233129
+    "totalTokenValue": 3251.350063233128701210
   },
   {
     "signalId": 24778,
@@ -132,12 +146,12 @@
     "contractAddress": "0xd45ff38d132114968091f154cdcc0dfea06b4444",
     "smartMoneyCount": 6,
     "alertPrice": 0.000736809388893193,
-    "currentPrice": 0.00068144,
-    "maxGain": 2.3362,
+    "currentPrice": 0.00099475,
+    "maxGain": 0.7534,
     "exitRate": 67,
     "status": "timeout",
     "signalTriggerTime": "2026-03-30T13:48:53Z",
-    "totalTokenValue": 5437.811738150152
+    "totalTokenValue": 5437.811738150152694803
   },
   {
     "signalId": 24726,
@@ -146,53 +160,11 @@
     "contractAddress": "0xd1219c4df302d81b111eb1c884781d52d6e24444",
     "smartMoneyCount": 6,
     "alertPrice": 0.000113111527380454,
-    "currentPrice": 1.7026e-05,
+    "currentPrice": 0.000017263,
     "maxGain": 0.3141,
     "exitRate": 40,
     "status": "timeout",
     "signalTriggerTime": "2026-03-30T12:54:46Z",
-    "totalTokenValue": 4524.337379761463
-  },
-  {
-    "signalId": 24645,
-    "ticker": "There is no spoon",
-    "direction": "buy",
-    "contractAddress": "0xbf33af2b8b54b5e17904a5318e1460347afd4444",
-    "smartMoneyCount": 8,
-    "alertPrice": 0.000413848911686827,
-    "currentPrice": 1.7053e-05,
-    "maxGain": 0.4643,
-    "exitRate": 51,
-    "status": "timeout",
-    "signalTriggerTime": "2026-03-29T16:17:08Z",
-    "totalTokenValue": 10400.8774431009
-  },
-  {
-    "signalId": 24613,
-    "ticker": "大佬",
-    "direction": "buy",
-    "contractAddress": "0x32f24d36007b06c0fd71d338731bb35f87444444",
-    "smartMoneyCount": 10,
-    "alertPrice": 0.000268447290886537,
-    "currentPrice": 5.8675e-06,
-    "maxGain": 0.4651,
-    "exitRate": 82,
-    "status": "timeout",
-    "signalTriggerTime": "2026-03-29T13:59:03Z",
-    "totalTokenValue": 9848.901326379242
-  },
-  {
-    "signalId": 24592,
-    "ticker": "Cake",
-    "direction": "buy",
-    "contractAddress": "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
-    "smartMoneyCount": 6,
-    "alertPrice": 1.3793026228289227,
-    "currentPrice": 1.40891,
-    "maxGain": 0.0335,
-    "exitRate": 18,
-    "status": "timeout",
-    "signalTriggerTime": "2026-03-29T08:50:31Z",
-    "totalTokenValue": 3273.3584970632724
+    "totalTokenValue": 4524.337379761462954879
   }
 ]
