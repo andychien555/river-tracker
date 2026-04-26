@@ -6,7 +6,7 @@
     "contractAddress": "0x4444a38e17db2f119562cf9254fb20c6e7811c0d",
     "smartMoneyCount": 4,
     "alertPrice": 0.000564572603359025,
-    "currentPrice": 0.00011404,
+    "currentPrice": 0.00012031,
     "maxGain": 0.3911,
     "exitRate": 11,
     "status": "timeout",
@@ -34,25 +34,11 @@
     "contractAddress": "0x92aa03137385f18539301349dcfc9ebc923ffb10",
     "smartMoneyCount": 3,
     "alertPrice": 0.158983130265240933,
-    "currentPrice": 0.18406,
+    "currentPrice": 0.18495,
     "maxGain": 0.604,
     "exitRate": 100,
     "status": "exitRate",
     "signalTriggerTime": "2026-04-20T09:19:08Z",
     "totalTokenValue": 16083.172732530688611583
-  },
-  {
-    "signalId": 27022,
-    "ticker": "bibi",
-    "direction": "buy",
-    "contractAddress": "0x9212cf1f9f4a9c69bb010146ba5b0725169d4444",
-    "smartMoneyCount": 3,
-    "alertPrice": 0.002257056700321114,
-    "currentPrice": 0.00089534,
-    "maxGain": 0.4386,
-    "exitRate": 6,
-    "status": "timeout",
-    "signalTriggerTime": "2026-04-19T17:02:08Z",
-    "totalTokenValue": 6275.677309171021244525
   }
 ]
