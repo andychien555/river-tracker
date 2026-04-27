@@ -20,7 +20,7 @@
     "contractAddress": "0xdc84096074269d8f304d476124101249d105b60d",
     "smartMoneyCount": 3,
     "alertPrice": 0.049038030396127343,
-    "currentPrice": 0.048889,
+    "currentPrice": 0.048744,
     "maxGain": 0.2016,
     "exitRate": 27,
     "status": "timeout",
